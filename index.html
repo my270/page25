@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Diagramme des exigences - IA pour Radiographies</title>
+    <!-- Inclusion de html2pdf.js pour la génération de PDF côté client -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2E8B57;
+            --secondary-color: #F0F8FF;
+            --accent-color: #FF8C00;
+            --text-color: #333;
+            --box-bg: #FFFFFF;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --correct-color: #4CAF50;
+            --partial-color: #FFC107;
+            --incorrect-color: #F44336;
+            --table-border: #ccc;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            margin: 0; padding: 20px;
+            display: flex; justify-content: center;
+        }
+        .container {
+            max-width: 900px; width: 100%; background: var(--box-bg);
+            padding: 30px; border-radius: 12px;
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { margin: 0; font-size: 2.5rem; color: var(--primary-color); }
+        .student-info, .buttons { display: flex; gap: 20px; margin-bottom: 30px; }
+        .student-info label { display: flex; align-items: center; font-weight: bold; width: 120px; }
+        .student-info input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 6px; }
+        .intro { background-color: var(--primary-color); color: #fff; padding: 20px; border-radius: 8px; margin-bottom: 25px; }
+        .intro h2 { margin-top: 0; font-size: 1.8rem; }
+        .intro p { line-height: 1.5; }
+
+        /* Tableau comparatif */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background-color: #f9f9f9;
+        }
+        .comparison-table th, .comparison-table td {
+            border: 1px solid var(--table-border);
+            padding: 12px;
+        }
+        .comparison-table th {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+        }
+        .comparison-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        /* Diagramme des exigences */
+        .exigences-diagram {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 25px 0;
+            background-color: #f5f5f5;
+        }
+        .project-header {
+            margin-bottom: 20px;
+        }
+        .exigence-principale {
+            margin-bottom: 20px;
+        }
+        .project-header input, .exigence-principale input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+        .exigences-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        .exigence-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: white;
+            position: relative;
+        }
+        .exigence-box h4 {
+            margin-top: 0;
+            text-align: center;
+            background-color: #eee;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+        .exigence-box textarea {
+            width: 100%;
+            min-height: 100px;
+            resize: vertical;
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        .contrainte-box {
+            margin-top: 10px;
+        }
+        .contrainte-box h5 {
+            margin: 5px 0;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .explanation { font-style: italic; margin: 15px 0; }
+        .correction-feedback {
+            display: none;
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            font-style: italic;
+        }
+        .correct {
+            border: 2px solid var(--correct-color);
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+        .partially-correct {
+            border: 2px solid var(--partial-color);
+            background-color: rgba(255, 193, 7, 0.1);
+        }
+        .incorrect {
+            border: 2px solid var(--incorrect-color);
+            background-color: rgba(244, 67, 54, 0.1);
+        }
+        .results-panel {
+            display: none;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e9f5f9;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .results-panel h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+        .score {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        .points {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 50%;
+            display: none;
+        }
+        .good-point {
+            background-color: var(--correct-color);
+            color: white;
+        }
+        .neutral-point {
+            background-color: var(--partial-color);
+            color: black;
+        }
+        .bad-point {
+            background-color: var(--incorrect-color);
+            color: white;
+        }
+        .note-provisoire {
+            margin-top: 10px;
+            font-style: italic;
+            text-align: center;
+            color: #555;
+            font-weight: bold;
+        }
+        .buttons { justify-content: center; }
+        button { 
+            padding: 12px 24px; 
+            background-color: var(--accent-color); 
+            color: #fff; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 1rem; 
+            transition: background 0.3s; 
+        }
+        button:hover { background-color: #e67600; }
+        .conclusion { 
+            margin-top: 30px; 
+            font-style: italic; 
+            text-align: center; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="rapport">
+        <div class="header">
+            <h1>📊 Diagramme des exigences - IA pour Radiographies</h1>
+        </div>
+        <div class="student-info">
+            <label for="nom">📝 Nom:</label>
+            <input type="text" id="nom" name="nom">
+            <label for="prenom">👤 Prénom:</label>
+            <input type="text" id="prenom" name="prenom">
+        </div>
+        <div class="intro">
+            <h2>🎯 Outils d'un projet technique</h2>
+            <p>Lorsqu'on réalise un projet, il est important de bien organiser ses idées et de définir <strong>ce qu'on veut obtenir</strong>. Pour cela, on utilise différents outils dont :</p>
+            <ul>
+                <li><strong>Le cahier des charges</strong>, qui est un document écrit décrivant tout ce que le projet doit respecter (besoins, contraintes, objectifs).</li>
+                <li><strong>Le diagramme des exigences</strong>, qui est un schéma visuel permettant de mieux comprendre et structurer ces exigences.</li>
+            </ul>
+            <p>Ces outils sont très utiles car ils permettent de :</p>
+            <ul>
+                <li><strong>Clarifier les attentes</strong> dès le début du projet</li>
+                <li><strong>Éviter les erreurs</strong> en définissant précisément les objectifs</li>
+                <li><strong>Communiquer facilement</strong> avec toutes les personnes impliquées</li>
+                <li><strong>Mieux organiser le travail</strong> en reliant chaque exigence aux besoins du projet</li>
+            </ul>
+        </div>
+
+        <!-- Tableau comparatif -->
+        <h3>Comparaison entre Cahier des charges et Diagramme des exigences</h3>
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Critère</th>
+                    <th>Cahier des charges</th>
+                    <th>Diagramme des exigences</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Qu'est-ce que c'est ?</strong></td>
+                    <td>Un document qui explique tout ce qu'on attend du projet.</td>
+                    <td>Un schéma qui montre les exigences et leurs liens.</td>
+                </tr>
+                <tr>
+                    <td><strong>Comment ça se présente ?</strong></td>
+                    <td>Un texte avec des descriptions et des règles précises.</td>
+                    <td>Un dessin avec des cases reliées entre elles.</td>
+                </tr>
+                <tr>
+                    <td><strong>À quoi ça sert ?</strong></td>
+                    <td>Définir clairement ce qu'il faut faire et comment le faire.</td>
+                    <td>Organiser et comprendre les besoins du projet de manière visuelle.</td>
+                </tr>
+                <tr>
+                    <td><strong>Exemple : système de tri des déchets avec IA</strong></td>
+                    <td>Le système doit reconnaître les matériaux (plastique, verre, métal), être rapide et précis, et fonctionner avec une caméra.</td>
+                    <td>Un schéma avec les exigences : "Reconnaître plastique", "Reconnaître verre", "Rapide", "Précis", "Caméra", toutes reliées au projet.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Diagramme des exigences -->
+        <h3>Votre diagramme des exigences - IA pour l'analyse de radiographies</h3>
+        <div class="exigences-diagram">
+            <div class="project-header">
+                <label for="project-name"><strong>Nom du projet :</strong></label>
+                <input type="text" id="project-name">
+                <div class="correction-feedback" id="feedback-project-name"></div>
+                <div class="points" id="points-project-name"></div>
+            </div>
+            
+            <div class="exigence-principale">
+                <label for="exigence-principale"><strong>Exigence principale :</strong></label>
+                <input type="text" id="exigence-principale">
+                <div class="correction-feedback" id="feedback-exigence-principale"></div>
+                <div class="points" id="points-exigence-principale"></div>
+            </div>
+            
+            <h4>Exigences secondaires</h4>
+            <div class="exigences-grid">
+                <!-- Capture image -->
+                <div class="exigence-box">
+                    <h4>Capture image</h4>
+                    <textarea id="capture-image"></textarea>
+                    <div class="correction-feedback" id="feedback-capture-image"></div>
+                    <div class="points" id="points-capture-image"></div>
+                    <div class="contrainte-box">
+                        <h5>Résolution</h5>
+                        <textarea id="contrainte-resolution"></textarea>
+                        <div class="correction-feedback" id="feedback-contrainte-resolution"></div>
+                        <div class="points" id="points-contrainte-resolution"></div>
+                    </div>
+                </div>
+                
+                <!-- IA -->
+                <div class="exigence-box">
+                    <h4>IA</h4>
+                    <textarea id="ia"></textarea>
+                    <div class="correction-feedback" id="feedback-ia"></div>
+                    <div class="points" id="points-ia"></div>
+                    <div class="contrainte-box">
+                        <h5>Taux de reconnaissance</h5>
+                        <textarea id="contrainte-taux"></textarea>
+                        <div class="correction-feedback" id="feedback-contrainte-taux"></div>
+                        <div class="points" id="points-contrainte-taux"></div>
+                    </div>
+                </div>
+                
+                <!-- Affichage -->
+                <div class="exigence-box">
+                    <h4>Affichage</h4>
+                    <textarea id="affichage"></textarea>
+                    <div class="correction-feedback" id="feedback-affichage"></div>
+                    <div class="points" id="points-affichage"></div>
+                    <div class="contrainte-box">
+                        <h5>Temps de réponse</h5>
+                        <textarea id="contrainte-temps"></textarea>
+                        <div class="correction-feedback" id="feedback-contrainte-temps"></div>
+                        <div class="points" id="points-contrainte-temps"></div>
+                    </div>
+                </div>
+                
+                <!-- Sécurité / Fiabilité -->
+                <div class="exigence-box">
+                    <h4>Sécurité / Fiabilité</h4>
+                    <textarea id="securite"></textarea>
+                    <div class="correction-feedback" id="feedback-securite"></div>
+                    <div class="points" id="points-securite"></div>
+                    <div class="contrainte-box">
+                        <h5>Utilisation</h5>
+                        <textarea id="contrainte-utilisation"></textarea>
+                        <div class="correction-feedback" id="feedback-contrainte-utilisation"></div>
+                        <div class="points" id="points-contrainte-utilisation"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="results-panel" id="results-panel">
+            <h2>Résultats</h2>
+            <p>Vous avez obtenu <span class="score" id="score">0</span> points sur 10.</p>
+            <p id="feedback-message"></p>
+            <p class="note-provisoire">⚠️ Note provisoire qui sera ajustée manuellement lors de la correction finale.</p>
+        </div>
+        
+        <div class="buttons">
+            <button id="finish-btn" onclick="checkAnswers()">✅ J'ai fini</button>
+            <button onclick="generatePDF()">📄 Convertir en PDF et déposer dans Pearltrees</button>
+        </div>
+        
+        <div class="conclusion">
+            <p>💡 Le diagramme des exigences est un outil essentiel pour visualiser et organiser toutes les spécifications d'un projet technique avant sa réalisation.</p>
+        </div>
+    </div>
+    <script>
+        // Définition des réponses correctes basées sur l'image de correction fournie
+        const correctAnswers = {
+            "project-name": "Système d'IA pour l'analyse des radiographies médicales",
+            "exigence-principale": "Analyser automatiquement les radiographies pour détecter les anomalies et aider au diagnostic médical",
+            "capture-image": "Prendre une image claire et détaillée des radiographies",
+            "ia": "Identifier les anomalies et fractures présentes",
+            "affichage": "Indiquer les zones suspectes sur la radiographie et fournir un rapport d'analyse",
+            "securite": "Fonctionner de manière précise et éviter les erreurs critiques",
+            "contrainte-resolution": "Bonne résolution des images pour une analyse précise",
+            "contrainte-taux": "Fiabilité minimale de 95% dans la détection des anomalies",
+            "contrainte-temps": "Moins de 2 s",
+            "contrainte-utilisation": "Facilement interprétable par les professionnels de santé"
+        };
+        
+        // Fonction pour vérifier les réponses et attribuer des points
+        function checkAnswers() {
+            // Empêcher de cliquer à nouveau
+            document.getElementById('finish-btn').disabled = true;
+            
+            let totalPoints = 0;
+            const fields = [
+                "project-name", "exigence-principale", 
+                "capture-image", "ia", "affichage", "securite",
+                "contrainte-resolution", "contrainte-taux", "contrainte-temps", "contrainte-utilisation"
+            ];
+            
+            fields.forEach(field => {
+                const userAnswer = document.getElementById(field).value.trim();
+                const correctAnswer = correctAnswers[field];
+                const feedbackElement = document.getElementById(`feedback-${field}`);
+                const pointsElement = document.getElementById(`points-${field}`);
+                
+                // Initialiser les variables
+                let points = 0;
+                let feedbackText = "";
+                let className = "";
+                
+                // Si pas de réponse, c'est automatiquement 0 point
+                if (userAnswer === "") {
+                    points = 0;
+                    feedbackText = "Aucune réponse. La réponse attendue était: " + correctAnswers[field];
+                    className = "incorrect";
+                    pointsElement.className = "points bad-point";
+                } 
+                // Si la réponse est remplie, vérifier sa similarité avec la correction
+                else {
+                    // Convertir en minuscules pour la comparaison
+                    const userAnswerLower = userAnswer.toLowerCase();
+                    const correctAnswerLower = correctAnswer.toLowerCase();
+                    
+                    // Vérifier la ressemblance entre la réponse de l'élève et la réponse correcte
+                    if (userAnswerLower === correctAnswerLower) {
+                        // Réponse parfaitement exacte
+                        points = field.includes("principale") ? 2 : 1; // 2 points pour exigence principale, 1 pour le reste
+                        feedbackText = "Parfait! " + correctAnswer;
+                        className = "correct";
+                        pointsElement.className = "points good-point";
+                    } 
+                    // Vérifier si la réponse est partiellement correcte
+                    else if (correctAnswerLower.includes(userAnswerLower) || 
+                             userAnswerLower.includes(correctAnswerLower.substring(0, Math.floor(correctAnswerLower.length / 2))) ||
+                             similarityScore(userAnswerLower, correctAnswerLower) > 0.6) {
+                        // Réponse partiellement correcte
+                        points = field.includes("principale") ? 1 : 0.5;
+                        feedbackText = "Partiellement correct. La réponse attendue était: " + correctAnswer;
+                        className = "partially-correct";
+                        pointsElement.className = "points neutral-point";
+                    } 
+                    // Sinon, réponse incorrecte
+                    else {
+                        points = 0;
+                        feedbackText = "Incorrect. La réponse attendue était: " + correctAnswer;
+                        className = "incorrect";
+                        pointsElement.className = "points bad-point";
+                    }
+                }
+                
+                // Appliquer le feedback
+                document.getElementById(field).classList.add(className);
+                feedbackElement.textContent = feedbackText;
+                feedbackElement.classList.add(className);
+                feedbackElement.style.display = "block";
+                
+                // Afficher les points
+                pointsElement.textContent = points;
+                pointsElement.style.display = "block";
+                
+                // Ajouter au total
+                totalPoints += points;
+            });
+            
+            // Arrondir le total à un nombre entier
+            totalPoints = Math.round(totalPoints);
+            
+            // Afficher le score total
+            document.getElementById('score').textContent = totalPoints;
+            
+            // Ajouter un feedback général
+            let feedbackMessage = "";
+            if (totalPoints >= 8) {
+                feedbackMessage = "Excellent travail! Vous avez bien compris le concept du diagramme des exigences.";
+            } else if (totalPoints >= 5) {
+                feedbackMessage = "Bon travail. Continuez à vous améliorer!";
+            } else {
+                feedbackMessage = "Revoyez les concepts du diagramme des exigences pour mieux comprendre.";
+            }
+            document.getElementById('feedback-message').textContent = feedbackMessage;
+            
+            // Afficher le panneau de résultats
+            document.getElementById('results-panel').style.display = "block";
+            document.getElementById('results-panel').scrollIntoView({behavior: 'smooth'});
+        }
+        
+        // Fonction pour calculer la similarité entre deux chaînes de caractères
+        function similarityScore(str1, str2) {
+            // Calculer la distance de Levenshtein
+            const len1 = str1.length;
+            const len2 = str2.length;
+            const matrix = Array(len1 + 1).fill().map(() => Array(len2 + 1).fill(0));
+            
+            for (let i = 0; i <= len1; i++) {
+                matrix[i][0] = i;
+            }
+            
+            for (let j = 0; j <= len2; j++) {
+                matrix[0][j] = j;
+            }
+            
+            for (let i = 1; i <= len1; i++) {
+                for (let j = 1; j <= len2; j++) {
+                    const cost = str1[i - 1] !== str2[j - 1] ? 1 : 0;
+                    matrix[i][j] = Math.min(
+                        matrix[i - 1][j] + 1,      // deletion
+                        matrix[i][j - 1] + 1,      // insertion
+                        matrix[i - 1][j - 1] + cost // substitution
+                    );
+                }
+            }
+            
+            // Calculer la similarité (1 - distance normalisée)
+            const maxLen = Math.max(len1, len2);
+            return maxLen > 0 ? 1 - matrix[len1][len2] / maxLen : 1;
+        }
+        
+        function generatePDF() {
+            const nom = document.getElementById('nom').value.trim();
+            const prenom = document.getElementById('prenom').value.trim();
+            if (!nom || !prenom) {
+                alert('Veuillez remplir votre nom et prénom avant de générer le PDF.');
+                return;
+            }
+            
+            // Préparer le document pour l'impression PDF
+            const elementsToHideForPDF = document.querySelectorAll('.buttons');
+            elementsToHideForPDF.forEach(el => el.style.display = 'none');
+            
+            // Générer le PDF
+            const filename = `${prenom}_${nom}_diagramme_exigences.pdf`;
+            html2pdf()
+                .set({
+                    margin: 10,
+                    filename: filename,
+                    image: {type: 'jpeg', quality: 0.98},
+                    html2canvas: {scale: 2},
+                    jsPDF: {unit: 'mm', format: 'a4', orientation: 'portrait'}
+                })
+                .from(document.getElementById('rapport'))
+                .save()
+                .then(() => {
+                    // Restaurer l'affichage
+                    elementsToHideForPDF.forEach(el => el.style.display = 'flex');
+                    
+                    // Informer l'utilisateur de déposer le PDF dans Pearltrees
+                    alert('PDF généré avec succès. Veuillez maintenant déposer ce fichier dans votre espace Pearltrees.');
+                });
+        }
+    </script>
+</body>
+</html>
