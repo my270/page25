@@ -140,44 +140,30 @@
             padding: 15px;
             background-color: #e9f5f9;
             border-radius: 8px;
-            text-align: center;
         }
         .results-panel h2 {
             color: var(--primary-color);
             margin-top: 0;
+            text-align: center;
         }
-        .score {
-            font-size: 1.5rem;
+        .correction-title {
+            text-align: center;
             font-weight: bold;
+            margin-bottom: 15px;
             color: var(--primary-color);
         }
-        .points {
-            position: absolute;
-            top: 5px;
-            right: 10px;
+        .correction-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: rgba(46, 139, 87, 0.1);
+            border-radius: 5px;
+        }
+        .correction-label {
             font-weight: bold;
-            padding: 3px 8px;
-            border-radius: 50%;
-            display: none;
+            margin-bottom: 5px;
         }
-        .good-point {
-            background-color: var(--correct-color);
-            color: white;
-        }
-        .neutral-point {
-            background-color: var(--partial-color);
-            color: black;
-        }
-        .bad-point {
-            background-color: var(--incorrect-color);
-            color: white;
-        }
-        .note-provisoire {
-            margin-top: 10px;
-            font-style: italic;
-            text-align: center;
-            color: #555;
-            font-weight: bold;
+        .correction-answer {
+            margin-left: 15px;
         }
         .buttons { justify-content: center; }
         button { 
@@ -266,14 +252,12 @@
                 <label for="project-name"><strong>Nom du projet :</strong></label>
                 <input type="text" id="project-name">
                 <div class="correction-feedback" id="feedback-project-name"></div>
-                <div class="points" id="points-project-name"></div>
             </div>
             
             <div class="exigence-principale">
                 <label for="exigence-principale"><strong>Exigence principale :</strong></label>
                 <input type="text" id="exigence-principale">
                 <div class="correction-feedback" id="feedback-exigence-principale"></div>
-                <div class="points" id="points-exigence-principale"></div>
             </div>
             
             <h4>Exigences secondaires</h4>
@@ -283,12 +267,10 @@
                     <h4>Capture image</h4>
                     <textarea id="capture-image"></textarea>
                     <div class="correction-feedback" id="feedback-capture-image"></div>
-                    <div class="points" id="points-capture-image"></div>
                     <div class="contrainte-box">
                         <h5>Résolution</h5>
                         <textarea id="contrainte-resolution"></textarea>
                         <div class="correction-feedback" id="feedback-contrainte-resolution"></div>
-                        <div class="points" id="points-contrainte-resolution"></div>
                     </div>
                 </div>
                 
@@ -297,12 +279,10 @@
                     <h4>IA</h4>
                     <textarea id="ia"></textarea>
                     <div class="correction-feedback" id="feedback-ia"></div>
-                    <div class="points" id="points-ia"></div>
                     <div class="contrainte-box">
                         <h5>Taux de reconnaissance</h5>
                         <textarea id="contrainte-taux"></textarea>
                         <div class="correction-feedback" id="feedback-contrainte-taux"></div>
-                        <div class="points" id="points-contrainte-taux"></div>
                     </div>
                 </div>
                 
@@ -311,12 +291,10 @@
                     <h4>Affichage</h4>
                     <textarea id="affichage"></textarea>
                     <div class="correction-feedback" id="feedback-affichage"></div>
-                    <div class="points" id="points-affichage"></div>
                     <div class="contrainte-box">
                         <h5>Temps de réponse</h5>
                         <textarea id="contrainte-temps"></textarea>
                         <div class="correction-feedback" id="feedback-contrainte-temps"></div>
-                        <div class="points" id="points-contrainte-temps"></div>
                     </div>
                 </div>
                 
@@ -325,26 +303,72 @@
                     <h4>Sécurité / Fiabilité</h4>
                     <textarea id="securite"></textarea>
                     <div class="correction-feedback" id="feedback-securite"></div>
-                    <div class="points" id="points-securite"></div>
                     <div class="contrainte-box">
                         <h5>Utilisation</h5>
                         <textarea id="contrainte-utilisation"></textarea>
                         <div class="correction-feedback" id="feedback-contrainte-utilisation"></div>
-                        <div class="points" id="points-contrainte-utilisation"></div>
                     </div>
                 </div>
             </div>
         </div>
         
         <div class="results-panel" id="results-panel">
-            <h2>Résultats</h2>
-            <p>Vous avez obtenu <span class="score" id="score">0</span> points sur 10.</p>
-            <p id="feedback-message"></p>
-            <p class="note-provisoire">⚠️ Note provisoire qui sera ajustée manuellement lors de la correction finale.</p>
+            <h2>Correction</h2>
+            <div class="correction-title">Voici les réponses attendues :</div>
+            
+            <div class="correction-item">
+                <div class="correction-label">Nom du projet :</div>
+                <div class="correction-answer" id="correction-project-name"></div>
+            </div>
+            
+            <div class="correction-item">
+                <div class="correction-label">Exigence principale :</div>
+                <div class="correction-answer" id="correction-exigence-principale"></div>
+            </div>
+            
+            <div class="correction-item">
+                <div class="correction-label">Capture image :</div>
+                <div class="correction-answer" id="correction-capture-image"></div>
+            </div>
+            
+            <div class="correction-item">
+                <div class="correction-label">Contrainte de résolution :</div>
+                <div class="correction-answer" id="correction-contrainte-resolution"></div>
+            </div>
+            
+            <div class="correction-item">
+                <div class="correction-label">IA :</div>
+                <div class="correction-answer" id="correction-ia"></div>
+            </div>
+            
+            <div class="correction-item">
+                <div class="correction-label">Contrainte de taux de reconnaissance :</div>
+                <div class="correction-answer" id="correction-contrainte-taux"></div>
+            </div>
+            
+            <div class="correction-item">
+                <div class="correction-label">Affichage :</div>
+                <div class="correction-answer" id="correction-affichage"></div>
+            </div>
+            
+            <div class="correction-item">
+                <div class="correction-label">Contrainte de temps de réponse :</div>
+                <div class="correction-answer" id="correction-contrainte-temps"></div>
+            </div>
+            
+            <div class="correction-item">
+                <div class="correction-label">Sécurité / Fiabilité :</div>
+                <div class="correction-answer" id="correction-securite"></div>
+            </div>
+            
+            <div class="correction-item">
+                <div class="correction-label">Contrainte d'utilisation :</div>
+                <div class="correction-answer" id="correction-contrainte-utilisation"></div>
+            </div>
         </div>
         
         <div class="buttons">
-            <button id="finish-btn" onclick="checkAnswers()">✅ J'ai fini</button>
+            <button id="finish-btn" onclick="showCorrection()">✅ J'ai fini</button>
             <button onclick="generatePDF()">📄 Convertir en PDF et déposer dans Pearltrees</button>
         </div>
         
@@ -367,12 +391,11 @@
             "contrainte-utilisation": "Facilement interprétable par les professionnels de santé"
         };
         
-        // Fonction pour vérifier les réponses et attribuer des points
-        function checkAnswers() {
+        // Fonction pour afficher la correction
+        function showCorrection() {
             // Empêcher de cliquer à nouveau
             document.getElementById('finish-btn').disabled = true;
             
-            let totalPoints = 0;
             const fields = [
                 "project-name", "exigence-principale", 
                 "capture-image", "ia", "affichage", "securite",
@@ -382,86 +405,34 @@
             fields.forEach(field => {
                 const userAnswer = document.getElementById(field).value.trim();
                 const correctAnswer = correctAnswers[field];
-                const feedbackElement = document.getElementById(`feedback-${field}`);
-                const pointsElement = document.getElementById(`points-${field}`);
                 
-                // Initialiser les variables
-                let points = 0;
-                let feedbackText = "";
-                let className = "";
+                // Afficher la réponse correcte
+                document.getElementById(`correction-${field}`).textContent = correctAnswer;
                 
-                // Si pas de réponse, c'est automatiquement 0 point
-                if (userAnswer === "") {
-                    points = 0;
-                    feedbackText = "Aucune réponse. La réponse attendue était: " + correctAnswers[field];
+                // Appliquer le style de correction
+                let className = "correct";
+                if (!userAnswer) {
                     className = "incorrect";
-                    pointsElement.className = "points bad-point";
-                } 
-                // Si la réponse est remplie, vérifier sa similarité avec la correction
-                else {
-                    // Convertir en minuscules pour la comparaison
+                } else {
                     const userAnswerLower = userAnswer.toLowerCase();
                     const correctAnswerLower = correctAnswer.toLowerCase();
                     
-                    // Vérifier la ressemblance entre la réponse de l'élève et la réponse correcte
                     if (userAnswerLower === correctAnswerLower) {
-                        // Réponse parfaitement exacte
-                        points = field.includes("principale") ? 2 : 1; // 2 points pour exigence principale, 1 pour le reste
-                        feedbackText = "Parfait! " + correctAnswer;
                         className = "correct";
-                        pointsElement.className = "points good-point";
-                    } 
-                    // Vérifier si la réponse est partiellement correcte
-                    else if (correctAnswerLower.includes(userAnswerLower) || 
+                    } else if (correctAnswerLower.includes(userAnswerLower) || 
                              userAnswerLower.includes(correctAnswerLower.substring(0, Math.floor(correctAnswerLower.length / 2))) ||
                              similarityScore(userAnswerLower, correctAnswerLower) > 0.6) {
-                        // Réponse partiellement correcte
-                        points = field.includes("principale") ? 1 : 0.5;
-                        feedbackText = "Partiellement correct. La réponse attendue était: " + correctAnswer;
                         className = "partially-correct";
-                        pointsElement.className = "points neutral-point";
-                    } 
-                    // Sinon, réponse incorrecte
-                    else {
-                        points = 0;
-                        feedbackText = "Incorrect. La réponse attendue était: " + correctAnswer;
+                    } else {
                         className = "incorrect";
-                        pointsElement.className = "points bad-point";
                     }
                 }
                 
-                // Appliquer le feedback
+                // Appliquer le style à la réponse de l'élève
                 document.getElementById(field).classList.add(className);
-                feedbackElement.textContent = feedbackText;
-                feedbackElement.classList.add(className);
-                feedbackElement.style.display = "block";
-                
-                // Afficher les points
-                pointsElement.textContent = points;
-                pointsElement.style.display = "block";
-                
-                // Ajouter au total
-                totalPoints += points;
             });
             
-            // Arrondir le total à un nombre entier
-            totalPoints = Math.round(totalPoints);
-            
-            // Afficher le score total
-            document.getElementById('score').textContent = totalPoints;
-            
-            // Ajouter un feedback général
-            let feedbackMessage = "";
-            if (totalPoints >= 8) {
-                feedbackMessage = "Excellent travail! Vous avez bien compris le concept du diagramme des exigences.";
-            } else if (totalPoints >= 5) {
-                feedbackMessage = "Bon travail. Continuez à vous améliorer!";
-            } else {
-                feedbackMessage = "Revoyez les concepts du diagramme des exigences pour mieux comprendre.";
-            }
-            document.getElementById('feedback-message').textContent = feedbackMessage;
-            
-            // Afficher le panneau de résultats
+            // Afficher le panneau de correction
             document.getElementById('results-panel').style.display = "block";
             document.getElementById('results-panel').scrollIntoView({behavior: 'smooth'});
         }
